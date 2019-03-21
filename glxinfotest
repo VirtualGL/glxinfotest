@@ -1,0 +1,144 @@
+#!/usr/bin/env bash
+
+# Copyright (C)2019 D. R. Commander.  All Rights Reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# - Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+# - Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# - Neither the name of The VirtualGL Project nor the names of its contributors
+#   may be used to endorse or promote products derived from this software
+#   without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS",
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
+set -e
+set -u
+trap onexit INT
+trap onexit TERM
+trap onexit EXIT
+
+SUCCESS=0
+
+killproxies()
+{
+	/opt/TurboVNC/bin/vncserver -kill :1 || true
+	/opt/TurboVNC/bin/vncserver -kill :2 || true
+	pkill Xvfb || true
+}
+
+onexit()
+{
+	killproxies
+	if [ $SUCCESS -eq 1 ]; then
+		echo GREAT SUCCESS!
+	else
+		echo Some errors were encountered.
+	fi
+}
+
+filter()
+{
+	grep -v "Currently available dedicated video memory:" |
+		grep -v "OpenGL core profile version string:" |
+		grep -v "OpenGL version string:" |
+		grep -v "OpenGL ES profile version string:"
+}
+
+DIR=~/.glxinfotest/$HOSTNAME$SUFFIX
+mkdir -p $DIR
+
+killproxies
+
+/opt/TurboVNC/bin/vncserver
+/opt/TurboVNC/bin/vncserver -extension GLX
+Xvfb :42 -screen 0 1920x1200x24 -screen 1 1920x1200x24 >~/Xvfb.log 2>&1 &
+Xvfb :43 -screen 0 1920x1200x30 >~/Xvfb2.log 2>&1 &
+sleep 2
+
+for DPY in 1 2 42 43; do
+	DISPLAY=:$DPY vglrun bin/glxinfo -c | filter >$DIR/glxinfo-c-$DPY.txt
+done
+
+DISPLAY=:0 bin/glxinfo -c | filter >$DIR/glxinfo-c-0.txt
+
+for DPY in 1 2 42 43; do
+	DISPLAY=:$DPY vglrun bin/glxinfo | filter >$DIR/glxinfo-$DPY.txt
+done
+
+export VGL_FORCEALPHA=1
+for DPY in 1 2 42 43; do
+	DISPLAY=:$DPY vglrun bin/glxinfo | filter >$DIR/glxinfo-$DPY-forcealpha.txt
+done
+unset VGL_FORCEALPHA
+export -n VGL_FORCEALPHA
+
+for SAMP in 2 4 8 16 32 64 128; do
+	export VGL_SAMPLES=$SAMP
+	for DPY in 1 2 42 43; do
+		DISPLAY=:$DPY vglrun bin/glxinfo | filter >$DIR/glxinfo-$DPY-samples$SAMP.txt
+	done
+	unset VGL_SAMPLES
+	export -n VGL_SAMPLES
+done
+
+for ALPHA in 0 8 10; do
+	export VGL_DEFAULTFBCONFIG=GLX_ALPHA_SIZE,$ALPHA
+	for DPY in 1 2 42 43; do
+		DISPLAY=:$DPY vglrun bin/glxinfo | filter >$DIR/glxinfo-$DPY-al$ALPHA.txt
+	done
+	unset VGL_DEFAULTFBCONFIG
+	export -n VGL_DEFAULTFBCONFIG
+done
+
+for DB in 0 1; do
+	export VGL_DEFAULTFBCONFIG=GLX_DOUBLEBUFFER,$DB
+	for DPY in 1 2 42 43; do
+		DISPLAY=:$DPY vglrun bin/glxinfo | filter >$DIR/glxinfo-$DPY-db$DB.txt
+	done
+	unset VGL_DEFAULTFBCONFIG
+	export -n VGL_DEFAULTFBCONFIG
+done
+
+for STENCIL in 0 8 10; do
+	export VGL_DEFAULTFBCONFIG=GLX_STENCIL_SIZE,$STENCIL
+	for DPY in 1 2 42 43; do
+		DISPLAY=:$DPY vglrun bin/glxinfo | filter >$DIR/glxinfo-$DPY-st$STENCIL.txt
+	done
+	unset VGL_DEFAULTFBCONFIG
+	export -n VGL_DEFAULTFBCONFIG
+done
+
+for DEPTH in 0 24 32; do
+	export VGL_DEFAULTFBCONFIG=GLX_DEPTH_SIZE,$DEPTH
+	for DPY in 1 2 42 43; do
+		DISPLAY=:$DPY vglrun bin/glxinfo | filter >$DIR/glxinfo-$DPY-dp$DEPTH.txt
+	done
+	unset VGL_DEFAULTFBCONFIG
+	export -n VGL_DEFAULTFBCONFIG
+done
+
+for SAMP in 2 4 8 16 32 64 128; do
+	export VGL_DEFAULTFBCONFIG=GLX_SAMPLES,$SAMP
+	for DPY in 1 2 42 43; do
+		DISPLAY=:$DPY vglrun bin/glxinfo | filter >$DIR/glxinfo-$DPY-sa$SAMP.txt
+	done
+	unset VGL_DEFAULTFBCONFIG
+	export -n VGL_DEFAULTFBCONFIG
+done
+
+SUCCESS=1
