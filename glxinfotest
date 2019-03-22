@@ -81,22 +81,22 @@ killproxies
 
 /opt/TurboVNC/bin/vncserver -depth $DEPTH
 /opt/TurboVNC/bin/vncserver -depth $DEPTH -extension GLX
-Xvfb :42 -screen 0 1920x1200x24 -screen 1 1920x1200x24 >~/Xvfb.log 2>&1 &
-Xvfb :43 -screen 0 1920x1200x30 >~/Xvfb2.log 2>&1 &
+Xvfb :42 -screen 0 1920x1200x24 -screen 1 1920x1200x30 >~/Xvfb.log 2>&1 &
 sleep 2
 
-for DPY in 1 2 42 43; do
+for DPY in 1 2 42; do
 	DISPLAY=:$DPY vglrun bin/glxinfo -c | filter >$DIR/glxinfo-c-$DPY.txt
 done
 
 DISPLAY=:0 bin/glxinfo -c | filter >$DIR/glxinfo-c-0.txt
+DISPLAY=:0 vglrun bin/glxinfo | filter >$DIR/glxinfo-0.txt
 
-for DPY in 1 2 42 43; do
+for DPY in 1 2 42; do
 	DISPLAY=:$DPY vglrun bin/glxinfo | filter >$DIR/glxinfo-$DPY.txt
 done
 
 export VGL_FORCEALPHA=1
-for DPY in 1 2 42 43; do
+for DPY in 1 2 42; do
 	DISPLAY=:$DPY vglrun bin/glxinfo | filter >$DIR/glxinfo-$DPY-forcealpha.txt
 done
 unset VGL_FORCEALPHA
@@ -104,7 +104,7 @@ export -n VGL_FORCEALPHA
 
 for SAMP in 2 4 8 16 32 64 128; do
 	export VGL_SAMPLES=$SAMP
-	for DPY in 1 2 42 43; do
+	for DPY in 1 2 42; do
 		DISPLAY=:$DPY vglrun bin/glxinfo | filter >$DIR/glxinfo-$DPY-samples$SAMP.txt
 	done
 	unset VGL_SAMPLES
@@ -113,7 +113,7 @@ done
 
 for ALPHA in 0 $DEFAULTALPHA 10; do
 	export VGL_DEFAULTFBCONFIG=GLX_ALPHA_SIZE,$ALPHA
-	for DPY in 1 2 42 43; do
+	for DPY in 1 2 42; do
 		DISPLAY=:$DPY vglrun bin/glxinfo | filter >$DIR/glxinfo-$DPY-al$ALPHA.txt
 	done
 	unset VGL_DEFAULTFBCONFIG
@@ -122,7 +122,7 @@ done
 
 for DB in 0 1; do
 	export VGL_DEFAULTFBCONFIG=GLX_DOUBLEBUFFER,$DB
-	for DPY in 1 2 42 43; do
+	for DPY in 1 2 42; do
 		DISPLAY=:$DPY vglrun bin/glxinfo | filter >$DIR/glxinfo-$DPY-db$DB.txt
 	done
 	unset VGL_DEFAULTFBCONFIG
@@ -131,7 +131,7 @@ done
 
 for STENCIL in 0 8 10; do
 	export VGL_DEFAULTFBCONFIG=GLX_STENCIL_SIZE,$STENCIL
-	for DPY in 1 2 42 43; do
+	for DPY in 1 2 42; do
 		DISPLAY=:$DPY vglrun bin/glxinfo | filter >$DIR/glxinfo-$DPY-st$STENCIL.txt
 	done
 	unset VGL_DEFAULTFBCONFIG
@@ -140,7 +140,7 @@ done
 
 for DEPTH in 0 24 32; do
 	export VGL_DEFAULTFBCONFIG=GLX_DEPTH_SIZE,$DEPTH
-	for DPY in 1 2 42 43; do
+	for DPY in 1 2 42; do
 		DISPLAY=:$DPY vglrun bin/glxinfo | filter >$DIR/glxinfo-$DPY-dp$DEPTH.txt
 	done
 	unset VGL_DEFAULTFBCONFIG
@@ -149,7 +149,7 @@ done
 
 for SAMP in 2 4 8 16 32 64 128; do
 	export VGL_DEFAULTFBCONFIG=GLX_SAMPLES,$SAMP
-	for DPY in 1 2 42 43; do
+	for DPY in 1 2 42; do
 		DISPLAY=:$DPY vglrun bin/glxinfo | filter >$DIR/glxinfo-$DPY-sa$SAMP.txt
 	done
 	unset VGL_DEFAULTFBCONFIG
