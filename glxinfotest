@@ -59,13 +59,27 @@ filter()
 		grep -v "OpenGL ES profile version string:"
 }
 
+SUFFIX=
+DEPTH=24
+DEFAULTALPHA=8
+while [ $# -gt 0 ]; do
+	case "$1" in
+	-10bpc)
+		SUFFIX=-10bpc
+		DEPTH=30
+		DEFAULTALPHA=2
+		;;
+	esac
+	shift
+done
+
 DIR=~/.glxinfotest/$HOSTNAME$SUFFIX
 mkdir -p $DIR
 
 killproxies
 
-/opt/TurboVNC/bin/vncserver
-/opt/TurboVNC/bin/vncserver -extension GLX
+/opt/TurboVNC/bin/vncserver -depth $DEPTH
+/opt/TurboVNC/bin/vncserver -depth $DEPTH -extension GLX
 Xvfb :42 -screen 0 1920x1200x24 -screen 1 1920x1200x24 >~/Xvfb.log 2>&1 &
 Xvfb :43 -screen 0 1920x1200x30 >~/Xvfb2.log 2>&1 &
 sleep 2
@@ -96,7 +110,7 @@ for SAMP in 2 4 8 16 32 64 128; do
 	export -n VGL_SAMPLES
 done
 
-for ALPHA in 0 8 10; do
+for ALPHA in 0 $DEFAULTALPHA 10; do
 	export VGL_DEFAULTFBCONFIG=GLX_ALPHA_SIZE,$ALPHA
 	for DPY in 1 2 42 43; do
 		DISPLAY=:$DPY vglrun bin/glxinfo | filter >$DIR/glxinfo-$DPY-al$ALPHA.txt
