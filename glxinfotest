@@ -56,7 +56,8 @@ filter()
 	grep -v "Currently available dedicated video memory:" |
 		grep -v "OpenGL core profile version string:" |
 		grep -v "OpenGL version string:" |
-		grep -v "OpenGL ES profile version string:"
+		grep -v "OpenGL ES profile version string:" |
+		sed '/^Memory info /,/^OpenGL vendor string: /{/^Memory info /!{/^OpenGL vendor string: /!d}}'
 }
 
 SUFFIX=
