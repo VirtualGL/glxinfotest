@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright (C)2019, 2021 D. R. Commander.  All Rights Reserved.
+# Copyright (C)2019, 2021-2022 D. R. Commander.  All Rights Reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -86,8 +86,8 @@ mkdir -p $DIR
 
 killproxies
 
-/opt/TurboVNC/bin/vncserver -depth $DEPTH
-/opt/TurboVNC/bin/vncserver -depth $DEPTH -extension GLX
+/opt/TurboVNC/bin/vncserver -depth $DEPTH -noxstartup
+/opt/TurboVNC/bin/vncserver -depth $DEPTH -noxstartup -extension GLX
 Xvfb :42 -screen 0 1920x1200x24 -screen 1 1920x1200x30 >~/Xvfb.log 2>&1 &
 sleep 2
 
