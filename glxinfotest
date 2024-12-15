@@ -78,7 +78,7 @@ while [ $# -gt 0 ]; do
 	shift
 done
 
-if [[ "${VGL_DISPLAY:-}" == *"/"* ]]; then
+if [[ "${VGL_DISPLAY:-}" == *"/"* || "${VGL_DISPLAY:-}" == "egl"* ]]; then
 	SUFFIX=${SUFFIX}-egl
 fi
 DIR=~/.glxinfotest/$HOSTNAME$SUFFIX
@@ -95,7 +95,7 @@ for DPY in 1 2 42; do
 	DISPLAY=:$DPY vglrun bin/glxinfo -c | filter >$DIR/glxinfo-c-$DPY.txt
 done
 
-if [[ ! "${VGL_DISPLAY:-}" == *"/"* ]]; then
+if [[ ! "${VGL_DISPLAY:-}" == *"/"* && ! "${VGL_DISPLAY:-}" == "egl"* ]]; then
 	DISPLAY=:0 bin/glxinfo -c | filter >$DIR/glxinfo-c-0.txt
 	DISPLAY=:0 vglrun bin/glxinfo | filter >$DIR/glxinfo-0.txt
 fi
